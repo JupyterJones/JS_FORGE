@@ -1,0 +1,78 @@
+// Try running the code yourself or modify the drone's path!
+console.log("Manual Flight Control Initialized.");
+
+drone.move();
+drone.turnRight();
+drone.move(2);
+drone.turnLeft();
+drone.move(3);
+drone.turnRight();
+console.log("Approaching laser barrier...");
+drone.hack(); // Disables the laser barrier
+drone.move(3);
+drone.turnRight();
+drone.move(3);
+drone.turnRight();
+drone.move();
+drone.turnRight();
+drone.turnRight();
+drone.move();
+drone.turnLeft();
+while (drone.scanAhead() !== 'wall') {
+  drone.move();
+}
+
+----------
+// SECTOR 1 DEMO SOLUTION
+const firstLeg = 3;
+drone.move(firstLeg); // Collects crystal at (4,1)
+const firstLeg1 = 6;
+ 
+drone.turnRight();
+drone.move(2);
+drone.turnRight();
+drone.move(3); // Collects crystal at (1,4)
+
+// Reverse direction toward portal
+drone.turnLeft();
+drone.move(3);
+drone.turnLeft();
+drone.turnLeft();
+drone.move(3); // Reach portal at (6,4)
+drone.turnRight();
+drone.move(firstLeg1);
+drone.turnRight();
+drone.move(firstLeg);
+
+--------
+
+drone.turnRight();
+drone.turnRight();
+drone.move(1); // Collects crystal at (1,4)
+
+// Reverse direction toward portal
+drone.turnLeft();
+drone.turnLeft();
+drone.move(3);
+drone.turnLeft();
+drone.turnLeft();
+drone.move(5); // Reach portal at (6,4)
+drone.turnLeft();
+//drone.turnRight();
+console.log("1 here");
+drone.move(firstLeg1);
+console.log("2 here");
+drone.turnRight();
+drone.turnRight();
+drone.move(firstLeg);
+drone.turnRight();
+drone.move(5);
+drone.turnRight();
+drone.move(3);
+drone.scanAhead()
+drone.move()
+
+
+
+
+

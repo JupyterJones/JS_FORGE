@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS-FORGE // Cyber Drone Academy</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">⚡ JS-FORGE</div>
+      <div class="brand-badge">Cyber Drone Academy</div>
+    </div>
+
+    <div class="sector-nav">
+      <select id="sectorSelect" class="sector-select">
+        <!-- Dynamically populated from curriculum -->
+      </select>
+    </div>
+
+    <div class="header-controls">
+      <button id="btnStartGame" class="btn-action btn-run" style="font-weight: 800; padding: 6px 12px; font-size: 0.8rem;" title="Start / Resume Campaign: Build Bot & Controls from Zero">
+        🚀 START
+      </button>
+
+      <button id="btnRestartGame" class="btn-action btn-stop" style="font-weight: 800; padding: 6px 12px; font-size: 0.8rem;" title="Factory Reset: Delete all stored data and restart from ground zero">
+        🔄 RESTART
+      </button>
+
+      <button id="btnDemoMode" class="btn-icon" style="font-weight: 700; padding: 6px 10px; font-size: 0.8rem; border-color: #60a5fa; color: #60a5fa;" title="Switch to Sandbox Demo Curriculum">
+        📺 DEMO
+      </button>
+
+      <div class="speed-selector">
+        <button id="speed05" class="speed-btn" data-speed="0.5">0.5x</button>
+        <button id="speed10" class="speed-btn active" data-speed="1.0">1.0x</button>
+        <button id="speed20" class="speed-btn" data-speed="2.0">2.0x</button>
+      </div>
+
+      <button id="soundToggleBtn" class="btn-icon" title="Toggle Sound">
+        <span id="soundIcon">🔊</span> SOUND
+      </button>
+
+      <button id="btnOpenDrawBot" class="btn-icon" style="border-color: var(--yellow); color: var(--yellow);" title="Open Custom Bot Drawing Studio">
+        🎨 DRAW BOT
+      </button>
+
+      <button id="btnOpenCodeBot" class="btn-icon" style="border-color: var(--green); color: var(--green);" title="Open Bot Coding Studio (Learn JS Graphics)">
+        💻 CODE A BOT
+      </button>
+
+      <button id="btnOpenManual" class="btn-icon" style="border-color: #38bdf8; color: #38bdf8;" title="Open JavaScript Theory & Engineering Manual">
+        📖 MANUAL & THEORY
+      </button>
+
+      <button id="resetBotBtn" class="btn-icon" title="Reset Drone Position">
+        ↺ RESET BOT
+      </button>
+    </div>
+  </header>
+
+  <!-- Split Screen Workspace -->
+  <main class="workspace-split">
+    
+    <!-- Left Stage: Cyber Arena & Telemetry HUD -->
+    <section class="arena-panel">
+      <div class="telemetry-bar">
+        <div class="telemetry-item">
+          <span class="telemetry-label">POS:</span>
+          <span id="telemetryPos" class="telemetry-val">0, 0</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">HEADING:</span>
+          <span id="telemetryHeading" class="telemetry-val">EAST</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">CORES:</span>
+          <span id="telemetryCores" class="telemetry-val">0 / 0</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">BATTERY:</span>
+          <span id="telemetryBattery" class="telemetry-val">100%</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">SHIELDS:</span>
+          <span id="telemetryShields" class="telemetry-val">100%</span>
+        </div>
+      </div>
+
+      <!-- Hardware Subsystem Assembly HUD (Active in START GAME mode) -->
+      <div id="hardwareRibbon" class="hardware-ribbon" style="display: none;">
+        <span class="hw-title">HARDWARE FIRMWARE:</span>
+        <div class="hw-badge" id="hwChassis"><span class="hw-icon">❌</span> CHASSIS</div>
+        <div class="hw-badge" id="hwEngine"><span class="hw-icon">❌</span> PROPULSION</div>
+        <div class="hw-badge" id="hwSteering"><span class="hw-icon">❌</span> GYRO STEERING</div>
+        <div class="hw-badge" id="hwScanner"><span class="hw-icon">❌</span> OPTICAL SENSOR</div>
+        <div class="hw-badge" id="hwAutomation"><span class="hw-icon">❌</span> AUTOMATION LOOP</div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="arenaCanvas"></canvas>
+
+        <!-- Manual Remote Drive Overlay (for quick manual testing) -->
+        <div class="remote-dpad">
+          <div class="dpad-title">Manual Drive</div>
+          <button id="btnDpadForward" class="dpad-btn" title="Drive Forward (W / Up)">▲</button>
+          <div class="dpad-row">
+            <button id="btnDpadLeft" class="dpad-btn" title="Turn Left (A / Left)">◀</button>
+            <button id="btnDpadScan" class="dpad-btn" title="Scan Ahead (Space / E)">👁</button>
+            <button id="btnDpadRight" class="dpad-btn" title="Turn Right (D / Right)">▶</button>
+          </div>
+          <div class="dpad-row">
+            <button id="btnDpadReverse" class="dpad-btn" title="Reverse (S / Down)">▼</button>
+            <button id="btnDpadHack" class="dpad-btn" title="Hack / Disarm (H / F)">⚡</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Stage: The Code Forge Terminal -->
+    <section class="terminal-panel">
+      
+      <!-- Mission Briefing & Concept Guide -->
+      <div class="briefing-card">
+        <div class="briefing-header">
+          <h2 id="missionTitle" class="briefing-title">Sector 0: The Grand Showcase</h2>
+          <span id="missionSubtitle" class="briefing-subtitle">Demo Run</span>
+        </div>
+        <div id="missionDesc" class="briefing-desc">
+          <!-- Populated from curriculum.js -->
+        </div>
+      </div>
+
+      <!-- Editor Action Toolbar -->
+      <div class="editor-toolbar">
+        <div class="toolbar-group">
+          <button id="btnWatchDemo" class="btn-action btn-demo" title="Watch Optimal Demo Solution">
+            📺 WATCH DEMO
+          </button>
+          <button id="btnRunCode" class="btn-action btn-run" title="Execute Your Script">
+            ▶ RUN CODE
+          </button>
+          <button id="btnStepCode" class="btn-action btn-step" title="Execute 1 Instruction">
+            ⏭ STEP
+          </button>
+          <button id="btnStopCode" class="btn-action btn-stop" title="Stop Running Script">
+            ⏹ STOP
+          </button>
+        </div>
+
+        <div class="toolbar-group">
+          <button id="btnToggleCodeSize" class="btn-icon" style="color: var(--cyan); border-color: rgba(0, 240, 255, 0.4);" title="Toggle Code Window Size (% of workspace)">
+            ⛶ <span id="codeSizeLabel">CODE: 65%</span>
+          </button>
+          <button id="btnRestoreCode" class="btn-icon" title="Reset Code to Mission Starter">
+            ↺ RESTORE CODE
+          </button>
+        </div>
+      </div>
+
+      <!-- Integrated Code Editor -->
+      <div class="editor-container">
+        <div id="gutterLines" class="gutter-lines">
+          <!-- Line numbers generated automatically -->
+        </div>
+        <div class="editor-wrapper">
+          <div id="lineHighlightBar" class="line-highlight-bar"></div>
+          <textarea id="codeEditor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+        </div>
+      </div>
+
+      <!-- Live Interactive Console -->
+      <div class="console-container">
+        <div class="console-header">
+          <span>TERMINAL TELEMETRY OUTPUT</span>
+          <button id="btnClearConsole" class="btn-icon" style="padding: 2px 6px; font-size: 0.65rem;">CLEAR</button>
+        </div>
+        <div id="consoleLogs" class="console-logs">
+          <div class="log-entry info">[SYSTEM] JS-FORGE Kernel online. Initializing flight computer...</div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Sector Complete Victory Modal -->
+  <div id="victoryModal" class="modal-overlay">
+    <div class="victory-card">
+      <div class="victory-icon">🏆</div>
+      <h2 class="victory-title">SECTOR SECURED!</h2>
+      <p id="victoryMessage" class="victory-desc">Maneuver protocol executed successfully.</p>
+      <div class="modal-actions">
+        <button id="btnModalStay" class="btn-icon">REPLAY SECTOR</button>
+        <button id="btnModalNext" class="btn-action btn-run">NEXT SECTOR ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Draw BOT Studio Modal -->
+  <div id="drawBotModal" class="modal-overlay">
+    <div class="fabricator-card">
+      <div class="fabricator-header">
+        <div class="fabricator-title-group">
+          <h2 class="fabricator-title">🛠️ BOT FORGE // DRAW YOUR CYBER ROVER</h2>
+          <span class="fabricator-subtitle">16x16 Holographic Pixel Matrix (Facing East ➔)</span>
+        </div>
+        <button id="btnCloseDrawBot" class="btn-icon" style="padding: 4px 10px;">✕ CLOSE</button>
+      </div>
+
+      <div class="fabricator-body">
+        <!-- Left: 16x16 Drawing Grid -->
+        <div class="grid-section">
+          <div class="grid-controls-bar">
+            <label class="toggle-label">
+              <input type="checkbox" id="chkSymmetry" checked>
+              <span>⇄ Vertical Symmetry</span>
+            </label>
+            <button id="btnGridClear" class="btn-icon" style="padding: 3px 8px; font-size: 0.72rem;">CLEAR MATRIX</button>
+          </div>
+
+          <div class="pixel-matrix-container">
+            <div id="pixelMatrixGrid" class="pixel-matrix-grid">
+              <!-- 16x16 tiles generated via JS -->
+            </div>
+          </div>
+          <div class="grid-hint">Tip: Click & drag to draw. Right edge is the FRONT (headlights point right).</div>
+        </div>
+
+        <!-- Right: Palette, Presets, and Live Hologram Preview -->
+        <div class="sidebar-section">
+          <!-- Palette -->
+          <div class="fabricator-panel">
+            <div class="panel-heading">COLOR PALETTE</div>
+            <div id="paletteSwatches" class="palette-swatches">
+              <!-- Color swatches generated via JS -->
+            </div>
+          </div>
+
+          <!-- Preset Templates -->
+          <div class="fabricator-panel">
+            <div class="panel-heading">CHASSIS TEMPLATES</div>
+            <div class="presets-group">
+              <button class="preset-btn" data-preset="rover">Classic Rover</button>
+              <button class="preset-btn" data-preset="scout">Stealth Scout</button>
+              <button class="preset-btn" data-preset="tank">Siege Mech</button>
+            </div>
+          </div>
+
+          <!-- Live Hologram Test Drive Preview -->
+          <div class="fabricator-panel">
+            <div class="panel-heading">LIVE HOLOGRAM PREVIEW</div>
+            <div class="preview-canvas-box">
+              <canvas id="botPreviewCanvas" width="160" height="160"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fabricator-footer">
+        <button id="btnResetBotDefault" class="btn-icon">↺ DEFAULT VECTOR ROVER</button>
+        <button id="btnSaveDrawBot" class="btn-action btn-run">⚡ INSTALL ON DRONE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code A BOT Studio Modal -->
+  <div id="codeBotModal" class="modal-overlay">
+    <div class="codebot-card">
+      <div class="fabricator-header">
+        <div class="fabricator-title-group">
+          <h2 class="fabricator-title" style="color: var(--green);">💻 BOT CODE STUDIO // HOW TO BUILD A ROBOT WITH JAVASCRIPT</h2>
+          <span class="fabricator-subtitle">Learn 2D Arrays, Coordinates & Loops by Programming Graphics</span>
+        </div>
+        <button id="btnCloseCodeBot" class="btn-icon" style="padding: 4px 10px;">✕ CLOSE</button>
+      </div>
+
+      <div class="codebot-body">
+        <!-- Left: Lessons & Code Editor -->
+        <div class="codebot-left">
+          <!-- Lesson Selector Tabs -->
+          <div class="codebot-tabs" id="codeBotTabs">
+            <!-- Injected from CODE_BOT_LESSONS -->
+          </div>
+
+          <!-- Lesson Concept Guide -->
+          <div class="codebot-concept" id="codeBotConcept">
+            <!-- Injected concept details -->
+          </div>
+
+          <!-- Code Editor Box -->
+          <div class="codebot-editor-box">
+            <div class="codebot-editor-toolbar">
+              <span class="editor-label">JAVASCRIPT SOURCE (16x16 GRID)</span>
+              <div class="toolbar-btns">
+                <button id="btnResetCodeBotLesson" class="btn-icon" style="padding: 3px 8px; font-size: 0.72rem;">↺ RESET LESSON</button>
+                <button id="btnRunCodeBot" class="btn-action btn-run" style="padding: 5px 12px; font-size: 0.78rem;">▶ COMPILE & RUN</button>
+              </div>
+            </div>
+            <textarea id="codeBotTextarea" class="codebot-textarea" spellcheck="false"></textarea>
+          </div>
+
+          <!-- Studio Console -->
+          <div class="codebot-console" id="codeBotConsole">
+            <div class="log-entry info">[COMPILER] Bot Code Studio ready. Select a lesson or write custom JavaScript!</div>
+          </div>
+        </div>
+
+        <!-- Right: Hologram Preview & Cheat Sheet -->
+        <div class="codebot-right">
+          <div class="fabricator-panel">
+            <div class="panel-heading">LIVE HOLOGRAM PREVIEW</div>
+            <div class="preview-canvas-box">
+              <canvas id="codeBotPreviewCanvas" width="180" height="180"></canvas>
+            </div>
+            <div class="grid-hint" style="margin-top: 8px;">Col 0 is REAR (thrusters) ➔ Col 15 is FRONT (headlights)</div>
+          </div>
+
+          <!-- Quick Reference -->
+          <div class="fabricator-panel">
+            <div class="panel-heading">JAVASCRIPT GRAPHICS CHEAT SHEET</div>
+            <div class="cheat-sheet-list">
+              <div class="cheat-item"><code>grid[r][c] = colors.CYAN;</code><span>Paint pixel</span></div>
+              <div class="cheat-item"><code>for (let c = 2; c &lt; 14; c++)</code><span>Draw row/line</span></div>
+              <div class="cheat-item"><code>colors.PINK, colors.YELLOW</code><span>Neon palette</span></div>
+              <div class="cheat-item"><code>colors.DARK, colors.ARMOR</code><span>Chassis steel</span></div>
+              <div class="cheat-item"><code>colors.CLEAR</code><span>Erase pixel</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fabricator-footer">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">Edit the code, click "Compile & Run", then install your bot into the arena!</span>
+        <button id="btnInstallCodeBot" class="btn-action btn-run">⚡ INSTALL ON ARENA DRONE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual & Theory Reference Modal -->
+  <div id="manualModal" class="modal-overlay">
+    <div class="manual-card">
+      <div class="fabricator-header">
+        <div class="fabricator-title-group">
+          <h2 class="fabricator-title" style="color: #38bdf8;">📖 JS-FORGE // ENGINEERING LAB MANUAL & JAVASCRIPT THEORY</h2>
+          <span class="fabricator-subtitle">The Complete Reference Manual: Concepts, API & Graphics Theory</span>
+        </div>
+        <button id="btnCloseManual" class="btn-icon" style="padding: 4px 10px;">✕ CLOSE</button>
+      </div>
+
+      <div class="manual-body">
+        <!-- Left: Chapter Table of Contents -->
+        <aside class="manual-toc" id="manualToc">
+          <!-- Populated from manualData.js -->
+        </aside>
+
+        <!-- Right: Chapter Content Display -->
+        <div class="manual-content" id="manualContent">
+          <!-- Populated from manualData.js -->
+        </div>
+      </div>
+
+      <div class="fabricator-footer">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">
+          Quick Reference: Consult this anytime while solving Sector Missions!
+        </span>
+        <button id="btnCloseManualFooter" class="btn-action btn-demo">RETURN TO GAME</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restart Game Confirmation Modal (Wipes all stored data like LogicForge) -->
+  <div id="restartConfirmModal" class="modal-overlay">
+    <div class="restart-confirm-card">
+      <div class="restart-header">
+        <span class="restart-badge">⚠️ FACTORY RESET // START FRESH</span>
+        <button id="btnCloseRestartModal" class="btn-icon" style="padding: 4px 10px;">✕</button>
+      </div>
+      <h2 class="restart-title">WIPE SAVED DATA &amp; RESTART?</h2>
+      <p class="restart-desc">
+        Like <strong>LOGICFORGE</strong>, restarting will completely delete all locally stored data:
+      </p>
+      <ul class="restart-wipe-list">
+        <li>❌ <strong>Custom Robot Blueprints:</strong> All drawn or coded sprites wiped back to blank.</li>
+        <li>❌ <strong>Firmware Upgrades:</strong> Propulsion, steering, optical sensors, and loops returned to locked state.</li>
+        <li>❌ <strong>Saved Code &amp; Checkpoints:</strong> All sector code reset to starter templates.</li>
+        <li>❌ <strong>Assembly Cradle:</strong> Rover cleared off the hangar floor back to ground zero.</li>
+      </ul>
+      <div class="restart-warning">
+        🚨 <strong>CRITICAL WARNING:</strong> This action permanently clears your browser's <code>localStorage</code> for JS-Forge. You will start at <strong>Stage 1 with NO robot and NO propulsion</strong>!
+      </div>
+      <div class="restart-actions">
+        <button id="btnCancelRestart" class="btn-icon" style="flex: 1; padding: 12px; font-weight: 600;">CANCEL &amp; KEEP PROGRESS</button>
+        <button id="btnConfirmRestart" class="btn-action btn-stop" style="flex: 1; padding: 12px; font-weight: 800; justify-content: center; box-shadow: 0 0 16px rgba(255, 0, 85, 0.4);">💥 WIPE ALL DATA &amp; RESTART</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+# ==============================================================================
+# NGINX CONFIGURATION: js_forge
+# File Location on VPS: /etc/nginx/sites-available/js_forge
+# Symlink: ln -sfn /etc/nginx/sites-available/js_forge /etc/nginx/sites-enabled/js_forge
+# ==============================================================================
+
+server {
+    server_name jsforge.staacornews.com js-forge.staacornews.com;
+
+    root /var/www/js_forge;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/jsforge.staacornews.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/jsforge.staacornews.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    if ($host = js-forge.staacornews.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    if ($host = jsforge.staacornews.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    listen [::]:80;
+    server_name jsforge.staacornews.com js-forge.staacornews.com;
+    return 404; # managed by Certbot
+}
